@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Convertiasc</title>
+  <meta name="description" content="Convertiasc: converti immagini, PDF, documenti, dati, audio e video direttamente nel browser. Include la funzione Rimuovi bianco per le immagini.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%234f46e5'/%3E%3Cpath d='M9 12h11l-3-3M23 20H12l3 3' stroke='white' stroke-width='2.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="top">
+    <div class="wrap top-inner">
+      <div class="brand">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M9 12h11l-3-3M23 20H12l3 3" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>Convertiasc</span>
+      </div>
+      <nav class="tabs" role="tablist">
+        <button role="tab" data-tab="conv" class="on">Converti</button>
+        <button role="tab" data-tab="rw">Rimuovi bianco</button>
+        <button role="tab" data-tab="info">Formati</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!-- ========== CONVERTI ========== -->
+    <section id="tab-conv" class="tab">
+      <label class="drop" id="drop">
+        <input type="file" id="fileIn" multiple hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m0 0-4 4m4-4 4 4M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <strong>Trascina qui i file</strong>
+        <span>oppure clicca per sceglierli</span>
+        <small>Tutto avviene nel tuo browser: i file non vengono caricati su nessun server.</small>
+      </label>
+
+      <div class="toolbar" id="convBar" hidden>
+        <label class="bulk">Converti tutti in
+          <select id="bulkFmt"></select>
+        </label>
+        <div class="spacer"></div>
+        <button id="convAll" class="primary">Converti tutto</button>
+        <button id="zipAll" disabled>Scarica tutto (ZIP)</button>
+        <button id="clearAll" class="ghost">Svuota</button>
+      </div>
+
+      <details class="opts" id="opts" hidden>
+        <summary>Opzioni</summary>
+        <div class="opts-grid">
+          <label class="field">Qualità JPG / WEBP <output id="qV">90</output>
+            <input type="range" id="q" min="10" max="100" value="90">
+          </label>
+          <label class="field">Larghezza massima immagini (px)
+            <input type="number" id="maxW" min="1" placeholder="originale">
+          </label>
+          <label class="field">Bitrate MP3
+            <select id="kbps"><option>128</option><option selected>192</option><option>256</option><option>320</option></select>
+          </label>
+          <label class="check"><input type="checkbox" id="mergePdf"> Unisci tutte le immagini in un solo PDF</label>
+          <label class="check"><input type="checkbox" id="convRw"> Rimuovi il bianco dalle immagini (usa le impostazioni della scheda «Rimuovi bianco»)</label>
+        </div>
+      </details>
+
+      <div id="extra"></div>
+      <ul class="list" id="list"></ul>
+    </section>
+
+    <!-- ========== RIMUOVI BIANCO ========== -->
+    <section id="tab-rw" class="tab" hidden>
+      <div class="rw-grid">
+        <div class="rw-main">
+          <label class="drop" id="rwDrop">
+            <input type="file" id="rwIn" accept="image/*" multiple hidden>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 16l4.5-4.5a2 2 0 0 1 2.8 0L16 16m-2-2 1.5-1.5a2 2 0 0 1 2.8 0L20 14M14 8h.01M6 20h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <strong>Trascina qui le immagini</strong>
+            <span>oppure clicca per sceglierle</span>
+          </label>
+          <div class="stage checker" id="stage" hidden>
+            <canvas id="rwCanvas" title="Clicca per scegliere il colore da rimuovere"></canvas>
+          </div>
+          <div class="thumbs" id="rwThumbs"></div>
+        </div>
+
+        <aside class="panel">
+          <h2>Rimuovi bianco</h2>
+          <label class="field">Tolleranza <output id="tolV">12</output>
+            <input type="range" id="tol" min="0" max="100" value="12">
+          </label>
+          <label class="field">Morbidezza bordi <output id="softV">10</output>
+            <input type="range" id="soft" min="0" max="60" value="10">
+          </label>
+          <fieldset class="radios">
+            <legend>Cosa rimuovere</legend>
+            <label><input type="radio" name="rwMode" value="edges" checked> Solo lo sfondo (il bianco che tocca i bordi)</label>
+            <label><input type="radio" name="rwMode" value="all"> Tutto il bianco, anche dentro l'immagine</label>
+          </fieldset>
+          <label class="check"><input type="checkbox" id="defringe" checked> Pulisci gli aloni chiari sui bordi</label>
+          <div class="field row">
+            <span>Colore da rimuovere</span>
+            <input type="color" id="rwColor" value="#ffffff">
+            <button id="rwReset" class="ghost sm">Bianco</button>
+          </div>
+          <p class="hint">Clicca sull'immagine per rimuovere un altro colore.</p>
+          <div class="field">
+            <span>Sfondo anteprima</span>
+            <div class="seg" id="bgSeg">
+              <button data-bg="checker" class="on">Scacchi</button>
+              <button data-bg="dark">Scuro</button>
+              <button data-bg="light">Chiaro</button>
+            </div>
+          </div>
+          <button id="rwHold" class="ghost block">Tieni premuto per vedere l'originale</button>
+          <div class="actions">
+            <button id="rwDl" class="primary" disabled>Scarica PNG</button>
+            <button id="rwDlAll" disabled>Scarica tutte (ZIP)</button>
+          </div>
+          <p class="hint" id="rwInfo"></p>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ========== FORMATI ========== -->
+    <section id="tab-info" class="tab" hidden>
+      <h2>Formati supportati</h2>
+      <p class="hint">Alcuni formati in ingresso (HEIC, TIFF, FLAC…) dipendono dal browser: Safari, Chrome e Firefox ne supportano di diversi.</p>
+      <div class="table-wrap"><table id="fmtTable"></table></div>
+    </section>
+  </main>
+
+  <footer class="wrap foot">
+    Convertiasc · open source · i tuoi file non lasciano mai il tuo computer
+  </footer>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
